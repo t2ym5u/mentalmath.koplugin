@@ -27,7 +27,7 @@ local Size            = require("ui/size")
 local UIManager       = require("ui/uimanager")
 local VerticalGroup   = require("ui/widget/verticalgroup")
 local VerticalSpan    = require("ui/widget/verticalspan")
-local _               = require("gettext")
+local _               = require("i18n")
 
 local MenuHelper  = require("menu_helper")
 local ScreenBase  = require("screen_base")
@@ -199,12 +199,15 @@ function CalcScreen:buildLayout()
             center_panel,
         }
     else
-        self.layout = VerticalGroup:new{
+        local content = VerticalGroup:new{
             align = "center",
+            q_frame,
             VerticalSpan:new{ width = Size.span.vertical_large },
-            center_panel,
+            self.answer_table,
             VerticalSpan:new{ width = Size.span.vertical_large },
+            self.status_text,
         }
+        self:buildPortraitLayout(action_buttons, content, nil)
     end
 
     self[1] = self.layout
