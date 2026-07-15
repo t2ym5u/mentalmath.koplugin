@@ -156,21 +156,14 @@ function CalcScreen:buildLayout()
         height    = q_height,
     }
 
-    -- Action buttons: New | Difficulty | Close
-    local action_buttons = ButtonTable:new{
-        width                 = panel_w,
-        shrink_unneeded_width = true,
-        buttons = {{
-            { text = _("Nouveau"),
-              callback = function() self:onNewSession() end },
-            { text = self:_getDiffButtonText(),
-              callback = function() self:openDifficultyMenu() end,
-              id = "diff_btn" },
+    -- Title bar with Options menu
+    local title_bar = self:buildTitleBar(_("Calcul Mental"), function()
+        return {
+            { text = _("Nouveau"),               callback = function() self:onNewSession() end },
+            { text = self:_getDiffButtonText(),  callback = function() self:openDifficultyMenu() end },
             self:makeRulesButtonConfig(GAME_RULES_EN, GAME_RULES_FR),
-            self:makeCloseButtonConfig(),
-        }},
-    }
-    self.action_buttons = action_buttons
+        }
+    end)
 
     -- Answer buttons (2 × 2 grid, rebuilt each question)
     self.answer_table = self:_buildAnswerTable(panel_w)
@@ -181,10 +174,8 @@ function CalcScreen:buildLayout()
         self.question_widget,
     }
 
-    local center_panel = VerticalGroup:new{
+    local content = VerticalGroup:new{
         align = "center",
-        action_buttons,
-        VerticalSpan:new{ width = Size.span.vertical_large },
         q_frame,
         VerticalSpan:new{ width = Size.span.vertical_large },
         self.answer_table,
@@ -193,24 +184,10 @@ function CalcScreen:buildLayout()
     }
 
     if is_landscape then
-        self.layout = HorizontalGroup:new{
-            align = "center",
-            HorizontalSpan:new{ width = Size.span.horizontal_default },
-            center_panel,
-        }
+        self:buildLandscapeLayout(title_bar, content)
     else
-        local content = VerticalGroup:new{
-            align = "center",
-            q_frame,
-            VerticalSpan:new{ width = Size.span.vertical_large },
-            self.answer_table,
-            VerticalSpan:new{ width = Size.span.vertical_large },
-            self.status_text,
-        }
-        self:buildPortraitLayout(action_buttons, content, nil)
+        self:buildPortraitLayout(title_bar, content, nil)
     end
-
-    self[1] = self.layout
     self:updateStatus()
 end
 
