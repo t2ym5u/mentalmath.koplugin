@@ -14,6 +14,7 @@ local function lrequire(name)
 end
 
 local Blitbuffer      = require("ffi/blitbuffer")
+local Button          = require("ui/widget/button")
 local ButtonTable     = require("ui/widget/buttontable")
 local Device          = require("device")
 local Font            = require("ui/font")
@@ -191,25 +192,40 @@ function CalcScreen:buildLayout()
     self:updateStatus()
 end
 
--- Build 2×2 ButtonTable for the 4 answer choices
+-- Build 2×2 grid of real bordered buttons for the 4 answer choices
 function CalcScreen:_buildAnswerTable(width)
     local opts = self.board.options or { 0, 1, 2, 3 }
     local function makeCallback(val)
         return function() self:onAnswer(val) end
     end
-    return ButtonTable:new{
-        width                 = width,
-        shrink_unneeded_width = true,
-        buttons = {
-            {
-                { text = tostring(opts[1] or "?"), callback = makeCallback(opts[1]) },
-                { text = tostring(opts[2] or "?"), callback = makeCallback(opts[2]) },
-            },
-            {
-                { text = tostring(opts[3] or "?"), callback = makeCallback(opts[3]) },
-                { text = tostring(opts[4] or "?"), callback = makeCallback(opts[4]) },
-            },
-        },
+    local btn_width = math.floor(width / 2)
+    local function makeRow(v1, v2)
+        local row = HorizontalGroup:new{}
+        table.insert(row, Button:new{
+            text       = tostring(v1 or "?"),
+            width      = btn_width,
+            margin     = Size.margin.small,
+            bordersize = Size.border.button,
+            radius     = Size.radius.button,
+            padding    = Size.padding.buttontable,
+            callback   = makeCallback(v1),
+        })
+        table.insert(row, Button:new{
+            text       = tostring(v2 or "?"),
+            width      = btn_width,
+            margin     = Size.margin.small,
+            bordersize = Size.border.button,
+            radius     = Size.radius.button,
+            padding    = Size.padding.buttontable,
+            callback   = makeCallback(v2),
+        })
+        return row
+    end
+    return VerticalGroup:new{
+        align = "center",
+        makeRow(opts[1], opts[2]),
+        VerticalSpan:new{ width = Size.span.vertical_default },
+        makeRow(opts[3], opts[4]),
     }
 end
 
