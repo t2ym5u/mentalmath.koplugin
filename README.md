@@ -1,4 +1,4 @@
-# calculmental.koplugin
+# mentalmath.koplugin
 
 A Mental Arithmetic plugin for [KOReader](https://github.com/koreader/koreader).
 
@@ -19,7 +19,7 @@ Solve arithmetic equations as quickly as possible. Each exercise shows a missing
 
 ## Installation
 
-1. Download `calculmental.koplugin.zip` from the [latest release](../../releases/latest).
+1. Download `mentalmath.koplugin.zip` from the [latest release](../../releases/latest).
 2. Extract into the `plugins/` folder of your KOReader data directory.
 3. Restart KOReader.
 4. Open the menu → **Tools** → **Mental Arithmetic**.

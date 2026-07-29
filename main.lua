@@ -19,7 +19,7 @@ local CalcScreen = lrequire("screen")
 -- ---------------------------------------------------------------------------
 
 local CalcMentalPlugin = PluginBase:extend{
-    name      = "calculmental",
+    name      = "mentalmath",
     menu_text = _("Calcul Mental"),
     menu_hint = "tools",
 }
