@@ -69,7 +69,7 @@ function QuestionWidget:paintTo(bb, x, y)
     local face = self.face
     local text = self.text
     local m    = RenderText:sizeUtf8Text(0, self.width, face, text, true, false)
-    local fh   = m.y_bottom - m.y_top
+    local fh   = m.y_top + m.y_bottom
     local tx   = x + math.floor((self.width  - m.x) / 2)
     local ty   = y + math.floor((self.height - fh)  / 2) + math.abs(m.y_top)
     RenderText:renderUtf8Text(bb, tx, ty, face, text, true, false, Blitbuffer.COLOR_BLACK)
