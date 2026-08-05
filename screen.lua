@@ -158,9 +158,9 @@ function CalcScreen:buildLayout()
     }
 
     -- Title bar with Options menu
-    local title_bar = self:buildTitleBar(_("Calcul Mental"), function()
+    local title_bar = self:buildTitleBar(_("Mental Math"), function()
         return {
-            { text = _("Nouveau"),               callback = function() self:onNewSession() end },
+            { text = _("New"),               callback = function() self:onNewSession() end },
             { text = self:_getDiffButtonText(),  callback = function() self:openDifficultyMenu() end },
             self:makeRulesButtonConfig(GAME_RULES_EN, GAME_RULES_FR),
         }
@@ -315,10 +315,10 @@ function CalcScreen:updateStatus(msg)
         end
 
         if total == 0 then
-            status = _("Choisissez une réponse !")
+            status = _("Choose an answer!")
         else
             if streak >= 3 then
-                status = string.format(_("%d/%d (%d%%)  Série: %d%s"),
+                status = string.format(_("%d/%d (%d%%)  Streak: %d%s"),
                     corr, total, pct, streak, feedback)
             else
                 status = string.format(_("%d/%d (%d%%)%s"), corr, total, pct, feedback)

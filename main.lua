@@ -10,8 +10,9 @@ local function lrequire(name)
 end
 
 local PluginBase = require("plugin_base")
-local _          = require("gettext")
+local _          = require("i18n")
 
+require("i18n").extend(lrequire("i18n_fr"))
 local CalcScreen = lrequire("screen")
 
 -- ---------------------------------------------------------------------------
@@ -20,7 +21,7 @@ local CalcScreen = lrequire("screen")
 
 local CalcMentalPlugin = PluginBase:extend{
     name      = "mentalmath",
-    menu_text = _("Calcul Mental"),
+    menu_text = _("Mental Math"),
     menu_hint = "tools",
 }
 

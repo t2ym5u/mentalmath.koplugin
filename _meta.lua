@@ -1,6 +1,6 @@
 local _ = require("gettext")
 return {
-    fullname    = _("Calcul Mental"),
-    description = _("Entraînez vos réflexes arithmétiques."),
+    fullname    = _("Mental Math"),
+    description = _("Train your arithmetic reflexes."),
     version     = "1.1.12",
 }
