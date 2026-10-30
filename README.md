@@ -29,8 +29,8 @@ Solve arithmetic equations as quickly as possible. Each exercise shows a missing
 | Action | How |
 |--------|-----|
 | Select an answer | Tap the answer button |
-| Change difficulty | Tap **Diff** |
-| New exercise | Tap **New** |
+| Change difficulty | Tap **Difficulty** in the menu |
+| New exercise | Tap **New game** in the menu |
 | Show rules | Tap **Rules** |
 
 ## License
