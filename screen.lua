@@ -14,8 +14,6 @@ local function lrequire(name)
 end
 
 local Blitbuffer      = require("ffi/blitbuffer")
-local Button          = require("ui/widget/button")
-local ButtonTable     = require("ui/widget/buttontable")
 local Device          = require("device")
 local Font            = require("ui/font")
 local FrameContainer  = require("ui/widget/container/framecontainer")
@@ -29,6 +27,7 @@ local UIManager       = require("ui/uimanager")
 local VerticalGroup   = require("ui/widget/verticalgroup")
 local VerticalSpan    = require("ui/widget/verticalspan")
 local _               = require("i18n")
+local T               = require("ffi/util").template
 
 local MenuHelper  = require("menu_helper")
 local ScreenBase  = require("screen_base")
@@ -42,15 +41,36 @@ local DeviceScreen = Device.screen
 -- ---------------------------------------------------------------------------
 
 local QuestionWidget = InputContainer:extend{
-    text      = "",
-    font_size = 32,
-    width     = 200,
-    height    = 80,
+    text   = "",
+    width  = 200,
+    height = 80,
 }
 
+-- Font:getFace() scales its size by the screen DPI; pixel-derived sizes are
+-- divided by this so they come out at the intended pixel size.
+local DPI_SCALE = DeviceScreen:scaleBySize(1000) / 1000
+
 function QuestionWidget:init()
-    self.face  = Font:getFace("cfont", self.font_size)
     self.dimen = Geom:new{ w = self.width, h = self.height }
+end
+
+-- Largest face (up to half the box height) whose ink fits the box. Measured
+-- without a width cap: capping at the box width would clip m.x and accept
+-- every size, letting a long question run off both sides.
+function QuestionWidget:_fitFace(text)
+    if self._fit_text == text and self._fit_face then return self._fit_face end
+    local max_w = self.width * 0.92
+    local max_h = self.height * 0.8
+    local size  = math.max(8, math.floor(self.height * 0.5 / DPI_SCALE))
+    local face
+    while size >= 8 do
+        face = Font:getFace("cfont", size)
+        local m = RenderText:sizeUtf8Text(0, self.width * 10, face, text, true, false)
+        if m.x <= max_w and (m.y_top + m.y_bottom) <= max_h then break end
+        size = size - 2
+    end
+    self._fit_text, self._fit_face = text, face
+    return face
 end
 
 function QuestionWidget:setText(text)
@@ -66,12 +86,13 @@ function QuestionWidget:paintTo(bb, x, y)
     self.dimen.y = y
     bb:paintRect(x, y, self.width, self.height, Blitbuffer.COLOR_WHITE)
 
-    local face = self.face
     local text = self.text
-    local m    = RenderText:sizeUtf8Text(0, self.width, face, text, true, false)
-    local fh   = m.y_top + m.y_bottom
-    local tx   = x + math.floor((self.width  - m.x) / 2)
-    local ty   = y + math.floor((self.height - fh)  / 2) + math.abs(m.y_top)
+    if text == "" then return end
+    local face = self:_fitFace(text)
+    local m    = RenderText:sizeUtf8Text(0, self.width * 10, face, text, true, false)
+    local tx   = x + math.floor((self.width - m.x) / 2)
+    -- Baseline that puts the ink's vertical centre on the box's centre.
+    local ty   = y + math.floor(self.height / 2 + (m.y_top - m.y_bottom) / 2)
     RenderText:renderUtf8Text(bb, tx, ty, face, text, true, false, Blitbuffer.COLOR_BLACK)
 end
 
@@ -140,93 +161,79 @@ end
 -- ---------------------------------------------------------------------------
 
 function CalcScreen:buildLayout()
-    local sw = DeviceScreen:getWidth()
     local is_landscape = self:isLandscape()
-
-    local panel_w = is_landscape
-        and math.floor(sw * 0.55)
-        or  math.floor(sw * 0.92)
-
-    -- Question display area
-    local q_font_size = math.max(20, math.floor(panel_w * 0.09))
-    local q_height    = math.ceil(q_font_size * 2.2)
-    self.question_widget = QuestionWidget:new{
-        text      = "",
-        font_size = q_font_size,
-        width     = panel_w,
-        height    = q_height,
-    }
 
     -- Title bar with Options menu
     local title_bar = self:buildTitleBar(_("Mental Math"), function()
         return {
-            { text = _("New"),               callback = function() self:onNewSession() end },
-            { text = self:_getDiffButtonText(),  callback = function() self:openDifficultyMenu() end },
+            { text = _("New game"), callback = function() self:onNewSession() end },
+            { text = T(_("Difficulty: %1"), self:_getDiffButtonText()),
+              callback = function() self:openDifficultyMenu() end },
             self:makeRulesButtonConfig(GAME_RULES_EN, GAME_RULES_FR),
         }
     end)
 
-    -- Answer buttons (2 × 2 grid, rebuilt each question)
-    self.answer_table = self:_buildAnswerTable(panel_w)
+    -- Answer pad (rebuilt each question, as the layout is)
+    self.status_text:setMaxWidth(self:getControlsWidth())
+    self.answer_table = self:_buildAnswerTable()
+    local controls = VerticalGroup:new{
+        align = "center",
+        self.status_text,
+        VerticalSpan:new{ width = Size.span.vertical_large },
+        self.answer_table,
+    }
+
+    -- Question display area: the full budget width, and as tall as a
+    -- comfortable reading line allows.
+    local frame_pad   = Size.padding.large
+    local frame_extra = 2 * (frame_pad + Size.border.window)
+    local budget_w, budget_h = self:getBoardBudget(title_bar, controls)
+    local q_w = budget_w - frame_extra
+    local q_h = math.max(40, math.min(budget_h - frame_extra, math.floor(q_w * 0.4)))
+    self.question_widget = QuestionWidget:new{
+        text   = self.board.question or "",
+        width  = q_w,
+        height = q_h,
+    }
 
     local q_frame = FrameContainer:new{
-        padding    = Size.padding.large,
+        padding    = frame_pad,
+        margin     = 0,
         background = Blitbuffer.COLOR_WHITE,
         self.question_widget,
     }
 
-    local content = VerticalGroup:new{
-        align = "center",
-        q_frame,
-        VerticalSpan:new{ width = Size.span.vertical_large },
-        self.answer_table,
-        VerticalSpan:new{ width = Size.span.vertical_large },
-        self.status_text,
-    }
-
     if is_landscape then
+        local content = HorizontalGroup:new{
+            align = "center",
+            q_frame,
+            HorizontalSpan:new{ width = self:getGutter() },
+            controls,
+        }
         self:buildLandscapeLayout(title_bar, content)
     else
-        self:buildPortraitLayout(title_bar, content, nil)
+        self:buildPortraitLayout(title_bar, q_frame,
+            VerticalGroup:new{ align = "center", controls, VerticalSpan:new{ width = self:getGutter() } })
     end
     self:updateStatus()
 end
 
--- Build 2×2 grid of real bordered buttons for the 4 answer choices
-function CalcScreen:_buildAnswerTable(width)
+-- The 4 answer choices as one full-width pad, with numbers big enough to
+-- read and hit at a glance.
+function CalcScreen:_buildAnswerTable()
     local opts = self.board.options or { 0, 1, 2, 3 }
-    local function makeCallback(val)
-        return function() self:onAnswer(val) end
+    local keys = {}
+    for i = 1, 4 do
+        local v = opts[i]
+        keys[i] = {
+            text      = tostring(v or "?"),
+            font_size = 30,
+            font_bold = true,
+            height    = DeviceScreen:scaleBySize(80),
+            callback  = function() self:onAnswer(v) end,
+        }
     end
-    local btn_width = math.floor(width / 2)
-    local function makeRow(v1, v2)
-        local row = HorizontalGroup:new{}
-        table.insert(row, Button:new{
-            text       = tostring(v1 or "?"),
-            width      = btn_width,
-            margin     = Size.margin.small,
-            bordersize = Size.border.button,
-            radius     = Size.radius.button,
-            padding    = Size.padding.buttontable,
-            callback   = makeCallback(v1),
-        })
-        table.insert(row, Button:new{
-            text       = tostring(v2 or "?"),
-            width      = btn_width,
-            margin     = Size.margin.small,
-            bordersize = Size.border.button,
-            radius     = Size.radius.button,
-            padding    = Size.padding.buttontable,
-            callback   = makeCallback(v2),
-        })
-        return row
-    end
-    return VerticalGroup:new{
-        align = "center",
-        makeRow(opts[1], opts[2]),
-        VerticalSpan:new{ width = Size.span.vertical_default },
-        makeRow(opts[3], opts[4]),
-    }
+    return self:buildNumberPad(keys)
 end
 
 -- ---------------------------------------------------------------------------
@@ -248,13 +255,8 @@ end
 function CalcScreen:_refreshAnswerTable()
     if not self.answer_table then return end
 
-    local sw        = DeviceScreen:getWidth()
-    local is_land   = self:isLandscape()
-    local panel_w   = is_land and math.floor(sw * 0.55) or math.floor(sw * 0.92)
-    local new_table = self:_buildAnswerTable(panel_w)
-
-    -- Replace answer_table in the VerticalGroup (it is always at index 4 in center_panel)
-    -- Easier: rebuild the full layout
+    -- The answer pad is part of the layout, so rebuilding the layout is the
+    -- simplest way to swap it.
     self:buildLayout()
     if self.question_widget then
         self.question_widget:setText(self.board.question or "")
@@ -307,22 +309,21 @@ function CalcScreen:updateStatus(msg)
         local last   = board.last_ok
         local pct    = (total > 0) and math.floor(corr * 100 / total) or 0
 
-        local feedback = ""
+        local feedback
         if last == true then
-            feedback = "  \xe2\x9c\x93"  -- UTF-8 checkmark ✓
+            feedback = "\xe2\x9c\x93"  -- UTF-8 checkmark ✓
         elseif last == false then
-            feedback = "  \xe2\x9c\x97"  -- UTF-8 cross ✗
+            feedback = "\xe2\x9c\x97"  -- UTF-8 cross ✗
         end
 
         if total == 0 then
-            status = _("Choose an answer!")
+            status = self:joinStatus(self:_getDiffButtonText(), _("Choose an answer!"))
         else
-            if streak >= 3 then
-                status = string.format(_("%d/%d (%d%%)  Streak: %d%s"),
-                    corr, total, pct, streak, feedback)
-            else
-                status = string.format(_("%d/%d (%d%%)%s"), corr, total, pct, feedback)
-            end
+            status = self:joinStatus(
+                self:_getDiffButtonText(),
+                T(_("Correct: %1/%2 (%3%)"), corr, total, pct),
+                streak >= 3 and T(_("Streak: %1"), streak) or nil,
+                feedback)
         end
     end
     ScreenBase.updateStatus(self, status)
@@ -338,8 +339,14 @@ function CalcScreen:_getDiffButtonText()
 end
 
 function CalcScreen:openDifficultyMenu()
-    MenuHelper.openDifficultyMenu{
-        current   = self.plugin:getSetting("difficulty", "easy"),
+    local items = {}
+    for _i, id in ipairs(MenuHelper.DIFFICULTY_ORDER) do
+        items[#items + 1] = { id = id, text = MenuHelper.DIFFICULTY_LABELS[id] or id }
+    end
+    MenuHelper.openPickerMenu{
+        title      = _("Difficulty"),
+        items      = items,
+        current_id = self.plugin:getSetting("difficulty", "easy"),
         on_select = function(id)
             self.plugin:saveSetting("difficulty", id)
             self.board.difficulty = id

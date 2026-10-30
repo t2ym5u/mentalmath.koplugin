@@ -2,5 +2,6 @@ return {
     ["Mental Math"]                      = { fr = "Calcul Mental", es = "Cálculo Mental", de = "Kopfrechnen" },
     ["Train your arithmetic reflexes."]  = { fr = "Entraînez vos réflexes arithmétiques.", es = "Entrena tus reflejos aritméticos.", de = "Trainiere deine Rechenreflexe." },
     ["Choose an answer!"]                = { fr = "Choisissez une réponse !", es = "¡Elige una respuesta!", de = "Wähle eine Antwort!" },
-    ["%d/%d (%d%%)  Streak: %d%s"]       = { fr = "%d/%d (%d%%)  Série: %d%s", es = "%d/%d (%d%%)  Racha: %d%s", de = "%d/%d (%d%%)  Serie: %d%s" },
+    ["Correct: %1/%2 (%3%)"]             = { fr = "Justes : %1/%2 (%3 %)", es = "Aciertos: %1/%2 (%3%)", de = "Richtig: %1/%2 (%3%)" },
+    ["Streak: %1"]                       = { fr = "Série : %1", es = "Racha: %1", de = "Serie: %1" },
 }

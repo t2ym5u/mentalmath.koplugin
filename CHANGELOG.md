@@ -6,6 +6,24 @@ Reconstructed from this repository's git history: each release lists the
 feature and fix commits it carried. Version bumps, screenshot additions
 and CI syncs are left out.
 
+## [1.2.0] - 2026-10-30
+
+### Changed
+- Redesigned play screen, in line with the other games: the question box
+  fills the available room, and the four answers are one full-width pad
+  with large bold numbers that are easy to read and hit. The status line
+  reads "difficulty · Correct: n/m (p%) · Streak: n · ✓" and wraps in
+  landscape instead of being cut off.
+- Title-bar menu in the same order as every other game, with the current
+  value shown: New game (was "New") and "Difficulty: Easy" (was a bare
+  "Easy").
+- New README screenshot.
+
+### Fixed
+- Long questions ran off both sides of the question box, and the question
+  was oversized on high-DPI screens: its size was set in pixels and then
+  scaled again by the screen DPI. It is now fitted to the box and centred.
+
 ## [1.1.15] - 2026-10-01
 
 ### Fixed
