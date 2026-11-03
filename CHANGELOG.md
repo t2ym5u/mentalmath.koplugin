@@ -6,6 +6,20 @@ Reconstructed from this repository's git history: each release lists the
 feature and fix commits it carried. Version bumps, screenshot additions
 and CI syncs are left out.
 
+## [1.3.0] - 2026-11-02
+
+### Added
+- Multiplayer "buzzer" mode, listed as "Mental Math · multiplayer" under
+  Tools → Games → Party & quiz (or Mode: Multiplayer in the menu). One
+  calculation is shown very big for the whole table; players shout, Answer
+  reveals the result and the reader asks who was first and right (or
+  nobody) for one point. A match is 10 to 30 questions (Questions setting),
+  with an optional time limit per question (Time limit: 5–20 s) and the
+  usual Difficulty. A final scoreboard names the winner; player names are
+  remembered and a match in progress is saved and restored. Solo play and
+  its saved score are unchanged.
+- Separate rules for the multiplayer mode, reachable from the solo rules.
+
 ## [1.2.1] - 2026-11-02
 
 ### Changed
