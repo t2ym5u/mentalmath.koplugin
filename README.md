@@ -17,6 +17,22 @@ Solve arithmetic equations as quickly as possible. Each exercise shows a missing
 - **Score tracker** — records best performance
 - **Auto-save** — progress saved on exit
 
+## Multiplayer
+
+Pick **Mental Math · multiplayer** under Tools → Games → Party & quiz (or
+*Mode: Multiplayer* in the menu) and lay the reader in the middle of the
+table — a buzzer game for 2 to 8 players.
+
+- One calculation is shown very big. Players shout the answer.
+- Tap **Answer** to reveal it, then pick who was first and right (or
+  *Nobody*): one point.
+- **Settings:** Players and Player names (remembered), Difficulty, Questions
+  (10, 15, 20 or 30 per match), Time limit (none, or 5–20 s per question —
+  the answer is revealed when it runs out).
+- After the last question a final scoreboard names the winner; **New game**
+  starts again. A match in progress is saved and restored. Solo play and its
+  saved score are unchanged.
+
 ## Installation
 
 1. Download `mentalmath.koplugin.zip` from the [latest release](../../releases/latest).

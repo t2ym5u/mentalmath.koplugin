@@ -23,6 +23,7 @@ local CalcMentalPlugin = PluginBase:extend{
     name      = "mentalmath",
     menu_text = _("Mental Math"),
     menu_hint = "tools",
+    party_mode = true,
 }
 
 function CalcMentalPlugin:createScreen()
