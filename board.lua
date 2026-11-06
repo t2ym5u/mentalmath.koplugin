@@ -33,10 +33,10 @@ end
 
 function CalcBoard:generate()
     self.last_ok = nil
-    local q, a  = self:_makeQuestion()
+    local q, a, near = self:_makeQuestion()
     self.question = q
     self.answer   = a
-    self.options  = self:_makeOptions(a)
+    self.options  = self:_makeOptions(a, near)
     self.status   = "playing"
 end
 
@@ -68,7 +68,8 @@ function CalcBoard:_makeQuestion()
         else
             local a = math.random(2, 9)
             local b = math.random(2, 9)
-            return string.format("%d \xc3\x97 %d = ?", a, b), a * b
+            return string.format("%d \xc3\x97 %d = ?", a, b), a * b,
+                { a * b + a, a * b - a, a * b + b, a * b - b }
         end
 
     else  -- hard
@@ -84,7 +85,8 @@ function CalcBoard:_makeQuestion()
         elseif op == 3 then
             local a = math.random(2, 12)
             local b = math.random(2, 12)
-            return string.format("%d \xc3\x97 %d = ?", a, b), a * b
+            return string.format("%d \xc3\x97 %d = ?", a, b), a * b,
+                { a * b + a, a * b - a, a * b + b, a * b - b }
         else
             -- Exact division
             local divisor  = math.random(2, 9)
@@ -94,38 +96,86 @@ function CalcBoard:_makeQuestion()
     end
 end
 
--- Build 4 plausible choices (one correct, three wrong)
-function CalcBoard:_makeOptions(correct)
-    local used    = { [correct] = true }
-    local choices = { correct }
+-- Build 4 plausible choices (one correct, three wrong).
+--
+-- Wrong answers look like real slips: a tens error (+-10, same last digit),
+-- an off-by-one or two, and for a product a neighbouring line of the times
+-- table (+-a or +-b). They used to be random offsets of 1 to 20, so in about
+-- 3 questions out of 4 the right answer was the only choice ending in its
+-- digit: working out the units alone gave it away.
+--
+-- Now the four choices follow a shape, drawn first and only then shifted so
+-- that one of its four values -- at random -- is the right answer:
+--   * 60%: two pairs {x, x+-10} and {y, y+-10}, y a near miss of x;
+--   * 40%: one pair {x, x+-10} and two near misses of x.
+-- (A one-digit answer gets three near misses of up to 3 instead.)
+-- Every value of a shape is a slip away from the others, so whichever one is
+-- right, the rest still look like mistakes, and the right answer sits
+-- anywhere in the order. The units digit picks out the answer only when it
+-- is one of the two loose near misses (about 1 question in 5).
+--
+-- `near` (optional) lists more near misses of `correct` (times-table
+-- neighbours), used as offsets like +-1 and +-2.
+local function shuffled(t)
+    for i = #t, 2, -1 do
+        local j = math.random(i)
+        t[i], t[j] = t[j], t[i]
+    end
+    return t
+end
 
-    -- Pool of offsets to try, from close to far
+local TWO_PAIRS_IN_10 = 6
+local SHAPE_TRIES     = 30
+
+function CalcBoard:_makeOptions(correct, near)
+    local steps = { 1, -1, 2, -2 }
+    for _, w in ipairs(near or {}) do
+        local k = w - correct
+        if k ~= 0 and k % 10 ~= 0 then steps[#steps + 1] = k end
+    end
+    local function tens() return math.random(2) == 1 and 10 or -10 end
+
+    for _ = 1, SHAPE_TRIES do
+        local shape
+        local k1 = steps[math.random(#steps)]
+        if correct < 10 then
+            -- A one-digit answer: a tens slip would be far-fetched (and could
+            -- only go up, always leaving the answer lowest), so three near
+            -- misses of up to 3.
+            local small = shuffled({ 1, -1, 2, -2, 3, -3 })
+            shape = { 0, small[1], small[2], small[3] }
+        elseif math.random(10) <= TWO_PAIRS_IN_10 then
+            shape = { 0, tens(), k1, k1 + tens() }
+        else
+            local k2 = steps[math.random(#steps)]
+            shape = { 0, tens(), k1, k2 }
+        end
+        local base = correct - shape[math.random(4)]
+        local seen, ok, out = {}, true, {}
+        for i, v in ipairs(shape) do
+            local w = base + v
+            if w < 0 or seen[w] then ok = false; break end
+            seen[w] = true
+            out[i] = w
+        end
+        if ok then return shuffled(out) end
+    end
+
+    -- Small answers may fit no shape: any offset up to 20.
+    local used, choices = { [correct] = true }, { correct }
     local offsets = {}
     for d = 1, 20 do
         offsets[#offsets + 1] =  d
         offsets[#offsets + 1] = -d
     end
-    -- Shuffle offsets
-    for i = #offsets, 2, -1 do
-        local j = math.random(i)
-        offsets[i], offsets[j] = offsets[j], offsets[i]
-    end
-
-    for _, d in ipairs(offsets) do
-        if #choices >= 4 then break end
+    for _, d in ipairs(shuffled(offsets)) do
         local w = correct + d
-        if w >= 0 and not used[w] then
+        if #choices < 4 and w >= 0 and not used[w] then
             used[w] = true
             choices[#choices + 1] = w
         end
     end
-
-    -- Shuffle final choices so correct is not always first
-    for i = #choices, 2, -1 do
-        local j = math.random(i)
-        choices[i], choices[j] = choices[j], choices[i]
-    end
-    return choices
+    return shuffled(choices)
 end
 
 -- ---------------------------------------------------------------------------

@@ -135,7 +135,7 @@ Mental Arithmetic — Rules
 
 Solve arithmetic exercises as quickly and accurately as possible.
 
-Each exercise shows an equation with a missing value or operator. Select the correct answer from the choices shown, or type it using the keyboard.
+Each exercise shows a calculation with its result missing. Tap the correct answer among the four choices shown.
 
 Operations include:
 • Addition (+)
@@ -143,7 +143,7 @@ Operations include:
 • Multiplication (×)
 • Division (÷)
 
-Score points for speed and accuracy. Difficulty increases as you progress.
+Your score counts the correct answers out of all answers, with your current streak of correct answers in a row.
 
 ]])
 
@@ -152,7 +152,7 @@ Calcul Mental — Règles
 
 Résolvez des exercices d'arithmétique aussi vite et précisément que possible.
 
-Un calcul est affiché avec une valeur manquante. Appuyez sur la bonne réponse parmi les choix proposés, ou saisissez-la au clavier.
+Un calcul est affiché sans son résultat. Appuyez sur la bonne réponse parmi les quatre choix proposés.
 
 Les opérations comprennent :
 • Addition (+)
@@ -160,7 +160,7 @@ Les opérations comprennent :
 • Multiplication (×)
 • Division (÷)
 
-Marquez des points pour la rapidité et la précision. La difficulté augmente avec vos progrès.
+Le score compte les bonnes réponses sur le total, avec votre série de bonnes réponses d'affilée.
 
 ]]
 
