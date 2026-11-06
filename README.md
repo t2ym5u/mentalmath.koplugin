@@ -8,12 +8,14 @@ A Mental Arithmetic plugin for [KOReader](https://github.com/koreader/koreader).
 
 ## Rules
 
-Solve arithmetic equations as quickly as possible. Each exercise shows a missing value — select the correct answer from the choices provided. Operations cover addition, subtraction, multiplication, and division. Difficulty adapts to your performance.
+Solve arithmetic equations as quickly as possible. Each exercise shows a missing value — select the correct answer from the choices provided. Operations cover addition, subtraction, multiplication, and division.
 
 ## Features
 
 - **Four operations** — +, −, ×, ÷
-- **Multiple difficulty levels** — adjustable or auto-scaling
+- **Three difficulty levels** — Easy, Medium, Hard, chosen in the menu
+- **Plausible wrong answers** — tens slips, off-by-ones and neighbouring
+  times-table lines, so the units digit alone rarely gives the answer away
 - **Score tracker** — records best performance
 - **Auto-save** — progress saved on exit
 

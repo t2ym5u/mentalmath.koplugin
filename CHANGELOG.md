@@ -6,6 +6,23 @@ Reconstructed from this repository's git history: each release lists the
 feature and fix commits it carried. Version bumps, screenshot additions
 and CI syncs are left out.
 
+## [1.4.0] - 2026-11-05
+
+### Changed
+- Wrong answers now look like real slips: a tens error (same last digit),
+  an off-by-one or two, or a neighbouring line of the times table. They
+  were random numbers up to 20 away, so in about 3 questions out of 4 the
+  right answer was the only choice ending in its digit; with an answer of
+  10 or more that now happens about 1 time in 5. The right answer also
+  sits anywhere in the order (it was rarely the largest).
+
+### Fixed
+- The rules no longer say the difficulty increases as you progress: it
+  stays at the level chosen in the menu.
+- The rules no longer mention typing the answer on a keyboard or points
+  for speed: you tap one of four choices, and the score counts correct
+  answers out of all answers, with your streak.
+
 ## [1.3.3] - 2026-11-04
 
 ### Fixed
