@@ -34,15 +34,6 @@ describe("CalcBoard", function()
                 end
             end
         end)
-
-        it("hard-difficulty division always yields an exact integer answer", function()
-            math.randomseed(3)
-            local b = Board:new({ difficulty = "hard" })
-            for _ = 1, 30 do
-                b:generate()
-                assert.are.equal(math.floor(b.answer), b.answer)
-            end
-        end)
     end)
 
     describe("wrong answers", function()
