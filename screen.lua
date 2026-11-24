@@ -360,7 +360,7 @@ function CalcScreen:onAnswer(choice)
     self:updateStatus()
 
     local delay = ok and 0.4 or 0.8
-    UIManager:scheduleIn(delay, function()
+    self:schedule(delay, function()
         self:_nextQuestion()
     end)
 end
@@ -370,6 +370,7 @@ end
 -- ---------------------------------------------------------------------------
 
 function CalcScreen:onNewSession()
+    self:cancelScheduled()  -- a pending "next question" belongs to the old session
     self.board:resetStats()
     self.plugin:saveState(self:serializeState())
     self:_nextQuestion()
@@ -473,6 +474,7 @@ end
 
 -- Switches mode and starts a new game in it.
 function CalcScreen:setMode(mode)
+    self:cancelScheduled()
     self:_stopCountdown()
     if self.party then self:_saveParty() end
     self.plugin.launch_mode = mode
@@ -529,6 +531,7 @@ function CalcScreen:_resumeParty()
 end
 
 function CalcScreen:_newMatch()
+    self:cancelScheduled()
     self:_stopCountdown()
     local names = Party.loadPlayers(self.plugin, Party.loadCount(self.plugin))
     self.match = Match.new(names, self:_partyQuestions())
@@ -610,7 +613,7 @@ function CalcScreen:_startCountdown(duration)
     self.time_remaining = duration
     self._tick_gen = (self._tick_gen or 0) + 1
     local gen = self._tick_gen
-    UIManager:scheduleIn(1, function() self:_onTick(gen) end)
+    self:schedule(1, function() self:_onTick(gen) end)
 end
 
 function CalcScreen:_stopCountdown()
@@ -628,7 +631,7 @@ function CalcScreen:_onTick(gen)
     if self.time_remaining <= 0 then
         self:onRevealAnswer()
     else
-        UIManager:scheduleIn(1, function() self:_onTick(gen) end)
+        self:schedule(1, function() self:_onTick(gen) end)
     end
 end
 
